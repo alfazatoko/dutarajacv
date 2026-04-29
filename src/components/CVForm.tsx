@@ -73,30 +73,65 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
             { id: 2, name: 'Klasik' },
             { id: 3, name: 'Kreatif' },
             { id: 4, name: 'Modern' },
-            { id: 5, name: 'Minimalis' }
+            { id: 5, name: 'Minimalis' },
+            { id: 6, name: 'Dinamis' },
+            { id: 7, name: 'Profesional' },
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => onChange({ theme: t.id })}
-              className={`py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all ${
-                data.theme === t.id 
-                ? 'border-[#9b87c4] bg-[#fdf2f2] text-[#9b87c4]' 
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-              }`}
+              style={{
+                padding: '10px 16px',
+                borderRadius: 12,
+                border: data.theme === t.id ? '2px solid #9b87c4' : '2px solid #e5e7eb',
+                background: data.theme === t.id ? '#f3f0ff' : '#fff',
+                color: data.theme === t.id ? '#9b87c4' : '#555',
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
             >
               {t.name}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-bold text-gray-600">Warna Tema</label>
-          <div className="relative group">
-            <input 
-              type="color" 
-              value={data.color} 
+        {/* Color picker — preset swatches + custom */}
+        <div>
+          <label style={{ fontSize: 13, fontWeight: 700, color: '#555', display: 'block', marginBottom: 10 }}>Warna Tema</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            {[
+              '#9b87c4','#0d47a1','#1565c0','#2e7d32','#c62828',
+              '#e65100','#4a148c','#006064','#37474f','#880e4f',
+              '#1a237e','#f57f17','#3e2723','#546e7a','#00695c',
+            ].map(preset => (
+              <button
+                key={preset}
+                onClick={() => onChange({ color: preset })}
+                title={preset}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  background: preset,
+                  border: data.color === preset ? '3px solid #222' : '2px solid rgba(0,0,0,0.12)',
+                  cursor: 'pointer',
+                  boxShadow: data.color === preset ? '0 0 0 2px #fff inset' : 'none',
+                  transition: 'transform 0.1s',
+                  flexShrink: 0,
+                }}
+              />
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input
+              type="color"
+              value={data.color}
               onChange={(e) => onChange({ color: e.target.value })}
-              className="w-12 h-10 rounded-md cursor-pointer border-2 border-gray-200 p-0 overflow-hidden"
+              style={{ width: 40, height: 36, borderRadius: 8, border: '2px solid #e5e7eb', cursor: 'pointer', padding: 2 }}
             />
+            <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#888', fontWeight: 700 }}>{data.color}</span>
+            <span style={{ fontSize: 11, color: '#bbb' }}>— warna kustom</span>
           </div>
         </div>
       </section>
@@ -144,12 +179,12 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
             />
           </div>
           <div>
-            <label>Profesi / Judul Pekerjaan</label>
+            <label>Jabatan : Admin Sosial Media</label>
             <input 
               type="text" 
               value={data.profesi} 
               onChange={(e) => onChange({ profesi: e.target.value })}
-              placeholder="Contoh: Admin Media Sosial" 
+              placeholder="Contoh: Admin Sosial Media" 
             />
           </div>
           <div>
@@ -280,7 +315,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   type="text" 
                   value={exp.comp} 
                   onChange={(e) => updateExp(idx, 'comp', e.target.value)}
-                  placeholder="Nama Perusahaan" 
+                  placeholder="Nama Toko / Perusahaan" 
                   className="text-sm font-bold"
                 />
                 <input 
@@ -294,7 +329,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   type="text" 
                   value={exp.pos} 
                   onChange={(e) => updateExp(idx, 'pos', e.target.value)}
-                  placeholder="Posisi Pekerjaan" 
+                  placeholder="Jabatan : Admin Sosial Media" 
                   className="col-span-2 text-sm font-semibold"
                 />
               </div>
