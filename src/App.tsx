@@ -9,6 +9,8 @@ import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'fir
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 import { Cloud, CheckCircle } from 'lucide-react';
+import { auth, googleProvider } from './lib/firebase';
+import { signInWithPopup, signOut, onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 
 const initialData: CVData = {
   nama: 'Cahaya Dewi',
@@ -33,11 +35,27 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [cvId, setCvId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [previewScale, setPreviewScale] = useState(0.45);
   const previewRef = useRef<HTMLDivElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    });
+  }, []);
 
   useEffect(() => {
     const updateScale = () => {
@@ -107,6 +125,32 @@ function App() {
     }
   };
 
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
+
   const handleDownload = () => {
     if (!previewRef.current) return;
     const element = previewRef.current;
@@ -128,6 +172,11 @@ function App() {
         onDownload={handleDownload}
         onSave={handleSave}
         isSaving={isSaving}
+        user={user}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+        onInstallPWA={handleInstallPWA}
+        showInstallBtn={!!deferredPrompt}
       />
       
       <main className="max-w-7xl mx-auto pt-20 px-4 md:px-8 flex flex-col lg:flex-row gap-8">
