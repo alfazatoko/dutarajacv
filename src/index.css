@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --md-primary: #0061A4;
+  --md-on-primary: #FFFFFF;
+  --md-primary-container: #D1E4FF;
+  --md-on-primary-container: #001D36;
+  --md-secondary: #535F70;
+  --md-surface: #F8FAF8;
+  --md-surface-variant: #E0E2EC;
+  --md-on-surface: #1A1C1E;
+  --md-on-surface-variant: #44474E;
+  --md-outline: #74777F;
+  --md-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+  --md-shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --md-radius: 1.5rem;
+  --cv-primary: #0061A4;
+}
+
+[data-theme='dark'] {
+  --md-primary: #D1E4FF;
+  --md-on-primary: #003258;
+  --md-primary-container: #00497D;
+  --md-on-primary-container: #D1E4FF;
+  --md-surface: #1A1C1E;
+  --md-surface-variant: #44474E;
+  --md-on-surface: #E2E2E6;
+  --md-on-surface-variant: #C4C6D0;
+  --md-outline: #8E9199;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+  padding-bottom: 80px; /* Space for bottom nav */
+}
+
+/* Material App Bar */
+.app-header {
+  background-color: var(--md-surface);
+  border-bottom: 1px solid var(--md-surface-variant);
+  height: 64px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+/* Material Card */
+.md-card {
+  background-color: white;
+  border-radius: var(--md-radius);
+  padding: 20px;
+  border: 1px solid var(--md-surface-variant);
+  box-shadow: var(--md-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 16px;
+}
+
+[data-theme='dark'] .md-card {
+  background-color: #242629;
+}
+
+.md-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--md-shadow-lg);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background-color: var(--md-surface);
+  border-top: 1px solid var(--md-surface-variant);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--md-on-surface-variant);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.nav-item.active {
+  color: var(--md-primary);
+  background-color: var(--md-primary-container);
+}
+
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Inputs */
+input, textarea, select {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  color: var(--md-on-surface);
+  font-family: inherit;
+  outline: none;
+  margin-top: 4px;
+}
+
+input:focus {
+  border-width: 2px;
+  border-color: var(--md-primary);
+}
+
+/* FAB (Floating Action Button) */
+.fab {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--md-shadow-lg);
+  cursor: pointer;
+  z-index: 99;
+  transition: transform 0.2s;
+}
+
+.fab:active {
+  transform: scale(0.9);
+}
+
+/* Custom Scrollbar for modern look */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--md-outline);
+  border-radius: 10px;
+}
+
+/* Preview Mobile Container */
+.preview-mobile {
+  background: #E2E8F0;
+  border-radius: 40px;
+  border: 8px solid #334155;
+  padding: 10px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
