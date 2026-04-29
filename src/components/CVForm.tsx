@@ -60,7 +60,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-8 pb-24">
       {/* Themes & Colors */}
-      <section className="md-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
+      <section id="theme-section" className="md-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
         <h2 className="text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-3 text-primary">
           <div className="p-2 bg-primary/10 rounded-lg"><Palette size={18} /></div>
           <span>Pilih Tema & Warna</span>
@@ -76,6 +76,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
             { id: 5, name: 'Minimalis' },
             { id: 6, name: 'Dinamis' },
             { id: 7, name: 'Profesional' },
+            { id: 8, name: 'Ribbon' },
           ].map((t) => (
             <button
               key={t.id}
@@ -163,7 +164,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
       </section>
 
       {/* Personal Info */}
-      <section className="md-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
+      <section id="personal-section" className="md-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
         <h2 className="text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-3 text-primary">
           <div className="p-2 bg-primary/10 rounded-lg"><User size={18} /></div>
           <span>Informasi Pribadi</span>
@@ -243,7 +244,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
       </section>
 
       {/* Education */}
-      <section className="md-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
+      <section id="education-section" className="md-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-3 text-primary">
             <div className="p-2 bg-primary/10 rounded-lg"><GraduationCap size={18} /></div>
@@ -269,6 +270,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   onChange={(e) => updateEdu(idx, 'year', e.target.value)}
                   placeholder="Periode (Contoh: 2011-2014)" 
                   className="text-sm"
+                  style={{ color: '#005696', fontWeight: 'bold' }}
                 />
                 <input 
                   type="text" 
@@ -276,6 +278,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   onChange={(e) => updateEdu(idx, 'school', e.target.value)}
                   placeholder="Nama Instansi Pendidikan" 
                   className="col-span-2 text-sm"
+                  style={{ color: '#005696', fontWeight: 'bold' }}
                 />
               </div>
               <input 
@@ -284,6 +287,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                 onChange={(e) => updateEdu(idx, 'desc', e.target.value)}
                 placeholder="Jurusan atau Prestasi" 
                 className="text-sm"
+                style={{ color: '#005696', fontWeight: 'bold' }}
               />
             </div>
           ))}
@@ -291,7 +295,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
       </section>
 
       {/* Experience */}
-      <section className="md-card animate-fade-in" style={{ animationDelay: '0.5s' }}>
+      <section id="experience-section" className="md-card animate-fade-in" style={{ animationDelay: '0.5s' }}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-sm font-bold uppercase tracking-widest flex items-center gap-3 text-primary">
             <div className="p-2 bg-primary/10 rounded-lg"><Briefcase size={18} /></div>
@@ -317,6 +321,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   onChange={(e) => updateExp(idx, 'comp', e.target.value)}
                   placeholder="Nama Toko / Perusahaan" 
                   className="text-sm font-bold"
+                  style={{ color: '#005696' }}
                 />
                 <input 
                   type="text" 
@@ -324,6 +329,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   onChange={(e) => updateExp(idx, 'period', e.target.value)}
                   placeholder="Periode (Contoh: 2018-Sekarang)" 
                   className="text-sm"
+                  style={{ color: '#005696', fontWeight: 'bold' }}
                 />
                 <input 
                   type="text" 
@@ -331,6 +337,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                   onChange={(e) => updateExp(idx, 'pos', e.target.value)}
                   placeholder="Jabatan : Admin Sosial Media" 
                   className="col-span-2 text-sm font-semibold"
+                  style={{ color: '#005696' }}
                 />
               </div>
               <textarea 
@@ -339,6 +346,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
                 placeholder="Tanggung jawab utama dan pencapaian (satu per baris)..."
                 rows={3}
                 className="text-sm"
+                style={{ color: '#005696', fontWeight: 'bold' }}
               />
             </div>
           ))}
@@ -346,7 +354,7 @@ const CVForm: React.FC<CVFormProps> = ({ data, onChange }) => {
       </section>
 
       {/* Skills */}
-      <section className="md-card animate-fade-in" style={{ animationDelay: '0.6s' }}>
+      <section id="skills-section" className="md-card animate-fade-in" style={{ animationDelay: '0.6s' }}>
         <h2 className="text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-3 text-primary">
           <div className="p-2 bg-primary/10 rounded-lg"><Award size={18} /></div>
           <span>Keahlian & Kompetensi</span>

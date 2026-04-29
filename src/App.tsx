@@ -5,10 +5,10 @@ import CVPreview from './components/CVPreview';
 import BottomNav from './components/BottomNav';
 import type { CVData } from './types/cv';
 import { db } from './lib/firebase';
-import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
-import { Cloud, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { auth, googleProvider } from './lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 
@@ -38,6 +38,7 @@ function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [cvId, setCvId] = useState<string | null>(null);
+  const [userCVs, setUserCVs] = useState<{id: string, nama: string}[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [previewScale, setPreviewScale] = useState(0.45);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -49,6 +50,31 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (user) {
+        try {
+          const q = query(
+            collection(db, 'cvs'), 
+            where('userId', '==', user.uid),
+            orderBy('updatedAt', 'desc')
+          );
+          const querySnapshot = await getDocs(q);
+          const docs = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            nama: (doc.data() as CVData).nama || 'Tanpa Nama'
+          }));
+          setUserCVs(docs);
+        } catch (e) {
+          console.error("Error fetching history:", e);
+        }
+      } else {
+        setUserCVs([]);
+      }
+    };
+    fetchHistory();
+  }, [user, isSaving]);
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -154,14 +180,60 @@ function App() {
   const handleDownload = () => {
     if (!previewRef.current) return;
     const element = previewRef.current;
+    element.classList.add('pdf-export-mode');
+    
     const opt = {
       margin: 0,
       filename: `CV_${data.nama.replace(/\s+/g, '_') || 'Maker'}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+      image: { type: 'jpeg' as const, quality: 1.0 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        letterRendering: true,
+        logging: false,
+        scrollY: 0,
+        windowWidth: 793
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const, compress: true },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
-    html2pdf().set(opt).from(element).save();
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      element.classList.remove('pdf-export-mode');
+    });
+  };
+
+  const handleSectionClick = (section: string) => {
+    setActiveTab('edit');
+    setTimeout(() => {
+      const element = document.getElementById(`${section}-section`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.classList.add('ring-4', 'ring-blue-500/20', 'ring-offset-2');
+        setTimeout(() => element.classList.remove('ring-4', 'ring-blue-500/20', 'ring-offset-2'), 2000);
+      }
+    }, 100);
+  };
+
+  const handleLoadCV = async (id: string) => {
+    try {
+      const docSnap = await getDoc(doc(db, 'cvs', id));
+      if (docSnap.exists()) {
+        setData(docSnap.data() as CVData);
+        setCvId(id);
+        setActiveTab('preview');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleLayoutClick = () => {
+    setActiveTab('edit');
+    setTimeout(() => {
+      const el = document.getElementById('theme-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
 
   return (
@@ -177,9 +249,13 @@ function App() {
         onLogout={handleLogout}
         onInstallPWA={handleInstallPWA}
         showInstallBtn={!!deferredPrompt}
+        history={userCVs}
+        onLoadCV={handleLoadCV}
       />
       
-      <main className="max-w-7xl mx-auto pt-20 px-4 md:px-8 flex flex-col lg:flex-row gap-8">
+      <main className="max-w-7xl mx-auto pt-20 px-4 md:px-8">
+
+        <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Layout for Mobile (Tab based) */}
         <div className={`w-full lg:w-1/2 ${activeTab === 'edit' ? 'block' : 'hidden lg:block'}`}>
@@ -226,22 +302,14 @@ function App() {
                   transformOrigin: 'top left',
                   transform: `scale(${previewScale})`,
                 }}>
-                  <CVPreview data={data} ref={previewRef} />
+                  <CVPreview data={data} ref={previewRef} onSectionClick={handleSectionClick} />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        </div>
       </main>
-
-      {/* Floating Action Button for Save (Mobile) */}
-      <button 
-        onClick={handleSave}
-        className="fab sm:hidden"
-        title="Simpan Otomatis"
-      >
-        <Cloud className={isSaving ? "animate-pulse" : ""} />
-      </button>
 
       {/* Toast Notification */}
       {showToast && (
@@ -254,7 +322,8 @@ function App() {
       <BottomNav 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
-        onDownload={handleDownload} 
+        onDownload={handleDownload}
+        onLayoutClick={handleLayoutClick}
       />
     </div>
   );

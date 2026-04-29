@@ -5,9 +5,10 @@ interface BottomNavProps {
   activeTab: 'edit' | 'preview';
   onTabChange: (tab: 'edit' | 'preview') => void;
   onDownload: () => void;
+  onLayoutClick: () => void;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, onDownload }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, onDownload, onLayoutClick }) => {
   return (
     <nav className="bottom-nav sm:hidden">
       <button 
@@ -34,7 +35,10 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, onDownloa
         <span>Unduh</span>
       </button>
 
-      <button className="nav-item">
+      <button 
+        onClick={onLayoutClick}
+        className="nav-item"
+      >
         <Settings />
         <span>Layout</span>
       </button>

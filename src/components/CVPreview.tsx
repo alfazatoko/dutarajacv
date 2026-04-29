@@ -2,12 +2,26 @@ import React from 'react';
 import { Phone, Mail, MapPin, Globe, User } from 'lucide-react';
 import type { CVData } from '../types/cv';
 
-interface CVPreviewProps { data: CVData; }
+interface CVPreviewProps { 
+  data: CVData; 
+  onSectionClick?: (section: string) => void;
+}
 
-const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, ref) => {
+const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data, onSectionClick }, ref) => {
   const { nama, profesi, profil, hp, email, alamat, photo, edu, exp, skills, theme, color, ttl, jk } = data;
   const skillList = skills.split(',').map(s => s.trim()).filter(s => s);
   const c = color || '#9b87c4';
+
+  const Clickable = ({ children, section }: { children: React.ReactNode, section: string }) => (
+    <div 
+      onClick={() => onSectionClick?.(section)}
+      style={{ cursor: onSectionClick ? 'pointer' : 'default', transition: 'all 0.2s' }}
+      onMouseEnter={(e) => { if(onSectionClick) e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.02)'; }}
+      onMouseLeave={(e) => { if(onSectionClick) e.currentTarget.style.backgroundColor = 'transparent'; }}
+    >
+      {children}
+    </div>
+  );
 
   // Helper: section title for sidebar (light)
   const SideTitle = ({ label }: { label: string }) => (
@@ -28,14 +42,16 @@ const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, re
       <div style={{ display:'flex', width:'100%', minHeight:'297mm', fontFamily:'Inter,sans-serif', background:'#fff', color:'#333' }}>
         {/* Sidebar */}
         <div style={{ width:'38%', background:c, color:'#fff', padding:'32px 28px', display:'flex', flexDirection:'column', gap:28 }}>
-          {photo && <div style={{ width:110, height:110, borderRadius:'50%', overflow:'hidden', border:'4px solid rgba(255,255,255,0.5)', alignSelf:'center', marginTop:8 }}><img src={photo} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="foto" /></div>}
-          <div style={{ textAlign:'center' }}>
-            <h1 style={{ fontSize:20, fontWeight:900, lineHeight:1.2, textTransform:'uppercase' }}>{nama || 'Nama Lengkap'}</h1>
-            <p style={{ fontSize:9, letterSpacing:3, textTransform:'uppercase', opacity:0.8, marginTop:4 }}>{profesi || 'Profesi'}</p>
-          </div>
+          <Clickable section="personal">
+            {photo && <div style={{ width:110, height:110, borderRadius:'50%', overflow:'hidden', border:'4px solid rgba(255,255,255,0.5)', alignSelf:'center', marginTop:8 }}><img src={photo} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="foto" /></div>}
+            <div style={{ textAlign:'center', marginTop:10 }}>
+              <h1 style={{ fontSize:20, fontWeight:900, lineHeight:1.2, textTransform:'uppercase' }}>{nama || 'Nama Lengkap'}</h1>
+              <p style={{ fontSize:9, letterSpacing:3, textTransform:'uppercase', opacity:0.8, marginTop:4 }}>{profesi || 'Profesi'}</p>
+            </div>
+          </Clickable>
           <hr style={{ borderColor:'rgba(255,255,255,0.3)' }} />
           {/* DATA PRIBADI */}
-          <div>
+          <Clickable section="personal">
             <SideTitle label="Data Pribadi" />
             <div style={{ display:'flex', flexDirection:'column', gap:7, fontSize:10 }}>
               <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}><Phone size={12} style={{ marginTop:1, flexShrink:0 }} /><span>{hp}</span></div>
@@ -44,27 +60,27 @@ const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, re
               {ttl && <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}><Globe size={12} style={{ marginTop:1, flexShrink:0 }} /><span>{ttl}</span></div>}
               {jk && <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}><User size={12} style={{ marginTop:1, flexShrink:0 }} /><span>{jk}</span></div>}
             </div>
-          </div>
+          </Clickable>
           {/* PROFIL */}
-          <div>
+          <Clickable section="summary">
             <SideTitle label="Profil Pribadi" />
             <p style={{ fontSize:10, lineHeight:1.9, opacity:0.9 }}>{profil}</p>
-          </div>
+          </Clickable>
           {/* PENDIDIKAN */}
-          <div>
+          <Clickable section="education">
             <SideTitle label="Pendidikan" />
             {edu.map((e,i) => <div key={i} style={{ marginBottom:12 }}><p style={{ fontSize:9, opacity:0.6 }}>{e.year}</p><p style={{ fontSize:10, fontWeight:700 }}>{e.school}</p>{e.desc && <p style={{ fontSize:9, opacity:0.7 }}>{e.desc}</p>}</div>)}
-          </div>
+          </Clickable>
         </div>
         {/* Main */}
         <div style={{ width:'62%', padding:'32px 28px', background:'#fafafa', display:'flex', flexDirection:'column', gap:28 }}>
           {/* KEAHLIAN */}
-          <div>
+          <Clickable section="skills">
             <MainTitle label="Keahlian" col={c} />
             <ul style={{ paddingLeft:16, fontSize:10, lineHeight:2.2, columns:2 }}>{skillList.map((s,i)=><li key={i}>{s}</li>)}</ul>
-          </div>
+          </Clickable>
           {/* PENGALAMAN */}
-          <div>
+          <Clickable section="experience">
             <MainTitle label="Pengalaman Kerja" col={c} />
             <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
               {exp.map((e,i) => <div key={i} style={{ paddingLeft:14, borderLeft:`3px solid ${c}`, position:'relative' }}>
@@ -75,7 +91,7 @@ const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, re
                 <ul style={{ paddingLeft:14, fontSize:10, lineHeight:1.9, color:'#555' }}>{e.desc.split('\n').filter(x=>x.trim()).map((x,j)=><li key={j}>{x.replace(/^-/,'').trim()}</li>)}</ul>
               </div>)}
             </div>
-          </div>
+          </Clickable>
         </div>
       </div>
     );
@@ -299,54 +315,62 @@ const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, re
             }
           </div>
           {/* Kanan: nama, profesi, kontak */}
-          <div style={{ flex:1, background:'#fff', padding:'24px 32px', display:'flex', flexDirection:'column', justifyContent:'center', position:'relative' }}>
-            {/* Dekorasi sudut kanan atas */}
-            <div style={{ position:'absolute', top:16, right:20, display:'flex', flexDirection:'column', gap:5, alignItems:'flex-end' }}>
-              <div style={{ width:32, height:3, background:c, borderRadius:2 }}/>
-              <div style={{ width:20, height:3, background:'#ddd', borderRadius:2 }}/>
-              <div style={{ width:12, height:3, background:'#eee', borderRadius:2 }}/>
+          <Clickable section="personal">
+            <div style={{ flex:1, background:'#fff', padding:'24px 32px', display:'flex', flexDirection:'column', justifyContent:'center', position:'relative', height:'100%' }}>
+              {/* Dekorasi sudut kanan atas */}
+              <div style={{ position:'absolute', top:16, right:20, display:'flex', flexDirection:'column', gap:5, alignItems:'flex-end' }}>
+                <div style={{ width:32, height:3, background:c, borderRadius:2 }}/>
+                <div style={{ width:20, height:3, background:'#ddd', borderRadius:2 }}/>
+                <div style={{ width:12, height:3, background:'#eee', borderRadius:2 }}/>
+              </div>
+              <h1 style={{ fontSize:28, fontWeight:900, color:'#111', letterSpacing:1, marginBottom:3, textTransform:'uppercase' }}>{nama || 'Nama Lengkap'}</h1>
+              <p style={{ fontSize:10, fontWeight:700, color:c, letterSpacing:4, textTransform:'uppercase', marginBottom:14 }}>{profesi}</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:5, fontSize:10, color:'#555' }}>
+                <div style={{ display:'flex', gap:8, alignItems:'center' }}><Mail size={11} color={c}/><span style={{ wordBreak:'break-all' }}>{email}</span></div>
+                <div style={{ display:'flex', gap:8, alignItems:'center' }}><Phone size={11} color={c}/>{hp}</div>
+                <div style={{ display:'flex', gap:8, alignItems:'center' }}><MapPin size={11} color={c}/>{alamat}</div>
+              </div>
             </div>
-            <h1 style={{ fontSize:28, fontWeight:900, color:'#111', letterSpacing:1, marginBottom:3, textTransform:'uppercase' }}>{nama || 'Nama Lengkap'}</h1>
-            <p style={{ fontSize:10, fontWeight:700, color:c, letterSpacing:4, textTransform:'uppercase', marginBottom:14 }}>{profesi}</p>
-            <div style={{ display:'flex', flexDirection:'column', gap:5, fontSize:10, color:'#555' }}>
-              <div style={{ display:'flex', gap:8, alignItems:'center' }}><Mail size={11} color={c}/><span style={{ wordBreak:'break-all' }}>{email}</span></div>
-              <div style={{ display:'flex', gap:8, alignItems:'center' }}><Phone size={11} color={c}/>{hp}</div>
-              <div style={{ display:'flex', gap:8, alignItems:'center' }}><MapPin size={11} color={c}/>{alamat}</div>
-            </div>
-          </div>
+          </Clickable>
         </div>
         {/* Body */}
         <div style={{ padding:'24px 28px', display:'flex', flexDirection:'column', gap:18 }}>
           {/* DATA PRIBADI – full width */}
-          <div style={{ background:'#fff', borderRadius:10, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-              <div style={{ width:14, height:14, background:c, borderRadius:3, flexShrink:0 }}/>
-              <span style={{ fontWeight:900, fontSize:11, textTransform:'uppercase', letterSpacing:2, color:'#222' }}>Data Pribadi</span>
+          <Clickable section="personal">
+            <div style={{ background:'#fff', borderRadius:10, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+                <div style={{ width:14, height:14, background:c, borderRadius:3, flexShrink:0 }}/>
+                <span style={{ fontWeight:900, fontSize:11, textTransform:'uppercase', letterSpacing:2, color:'#222' }}>Data Pribadi</span>
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'7px 24px', fontSize:10 }}>
+                <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Nama</span><span>: {nama}</span></div>
+                {ttl && <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Tempat, Tanggal Lahir</span><span>: {ttl}</span></div>}
+                {jk && <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Jenis Kelamin</span><span>: {jk}</span></div>}
+                <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Kewarganegaraan</span><span>: Indonesia</span></div>
+                <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Alamat</span><span>: {alamat}</span></div>
+              </div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'7px 24px', fontSize:10 }}>
-              <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Nama</span><span>: {nama}</span></div>
-              {ttl && <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Tempat, Tanggal Lahir</span><span>: {ttl}</span></div>}
-              {jk && <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Jenis Kelamin</span><span>: {jk}</span></div>}
-              <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Kewarganegaraan</span><span>: Indonesia</span></div>
-              <div style={{ display:'flex', gap:8 }}><span style={{ color:'#888', minWidth:120 }}>Alamat</span><span>: {alamat}</span></div>
-            </div>
-          </div>
+          </Clickable>
           {/* Pendidikan & Pengalaman – 2 kolom */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-            <div style={{ background:'#fff', borderRadius:10, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-                <div style={{ width:14, height:14, background:c, borderRadius:3, flexShrink:0 }}/>
-                <span style={{ fontWeight:900, fontSize:11, textTransform:'uppercase', letterSpacing:2, color:'#222' }}>Pendidikan</span>
+            <Clickable section="education">
+              <div style={{ background:'#fff', borderRadius:10, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)', height:'100%' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+                  <div style={{ width:14, height:14, background:c, borderRadius:3, flexShrink:0 }}/>
+                  <span style={{ fontWeight:900, fontSize:11, textTransform:'uppercase', letterSpacing:2, color:'#222' }}>Pendidikan</span>
+                </div>
+                {edu.map((e,i)=><div key={i} style={{ display:'flex', gap:8, marginBottom:8, fontSize:10 }}><span style={{ color:c }}>•</span><span><b>{e.school}</b>{e.desc && <span style={{ color:'#888' }}> — {e.desc}</span>}{e.year && <span style={{ display:'block', fontSize:9, color:'#aaa' }}>{e.year}</span>}</span></div>)}
               </div>
-              {edu.map((e,i)=><div key={i} style={{ display:'flex', gap:8, marginBottom:8, fontSize:10 }}><span style={{ color:c }}>•</span><span><b>{e.school}</b>{e.desc && <span style={{ color:'#888' }}> — {e.desc}</span>}{e.year && <span style={{ display:'block', fontSize:9, color:'#aaa' }}>{e.year}</span>}</span></div>)}
-            </div>
-            <div style={{ background:'#fff', borderRadius:10, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-                <div style={{ width:14, height:14, background:c, borderRadius:3, flexShrink:0 }}/>
-                <span style={{ fontWeight:900, fontSize:11, textTransform:'uppercase', letterSpacing:2, color:'#222' }}>Pengalaman</span>
+            </Clickable>
+            <Clickable section="experience">
+              <div style={{ background:'#fff', borderRadius:10, padding:'16px 20px', boxShadow:'0 1px 4px rgba(0,0,0,0.07)', height:'100%' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+                  <div style={{ width:14, height:14, background:c, borderRadius:3, flexShrink:0 }}/>
+                  <span style={{ fontWeight:900, fontSize:11, textTransform:'uppercase', letterSpacing:2, color:'#222' }}>Pengalaman</span>
+                </div>
+                {exp.map((e,i)=><div key={i} style={{ display:'flex', gap:8, marginBottom:8, fontSize:10 }}><span style={{ color:c }}>•</span><span><b>{e.pos}</b> — {e.comp}<span style={{ display:'block', fontSize:9, color:'#aaa' }}>{e.period}</span></span></div>)}
               </div>
-              {exp.map((e,i)=><div key={i} style={{ display:'flex', gap:8, marginBottom:8, fontSize:10 }}><span style={{ color:c }}>•</span><span><b>{e.pos}</b> — {e.comp}<span style={{ display:'block', fontSize:9, color:'#aaa' }}>{e.period}</span></span></div>)}
-            </div>
+            </Clickable>
           </div>
           {/* Kemampuan & Hobi – 2 kolom */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
@@ -379,77 +403,228 @@ const CVPreview = React.forwardRef<HTMLDivElement, CVPreviewProps>(({ data }, re
           {/* Decorative circle */}
           <div style={{ position:'absolute', right:-60, top:-60, width:220, height:220, borderRadius:'50%', background:'rgba(255,255,255,0.08)' }}/>
           <div style={{ position:'absolute', right:40, bottom:-80, width:200, height:200, borderRadius:'50%', background:'rgba(255,255,255,0.05)' }}/>
-          <div style={{ flex:1, zIndex:1 }}>
-            <h1 style={{ fontSize:40, fontWeight:900, color:'#fff', lineHeight:1.1, marginBottom:6 }}>{nama ? nama.split(' ').map((w,i)=><span key={i} style={{ display:'block' }}>{w}</span>) : 'Nama Lengkap'}</h1>
-            <p style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.8)', textTransform:'uppercase', letterSpacing:3, marginTop:8 }}>{profesi}</p>
-          </div>
+          <Clickable section="personal">
+            <div style={{ flex:1, zIndex:1 }}>
+              <h1 style={{ fontSize:40, fontWeight:900, color:'#fff', lineHeight:1.1, marginBottom:6 }}>{nama ? nama.split(' ').map((w,i)=><span key={i} style={{ display:'block' }}>{w}</span>) : 'Nama Lengkap'}</h1>
+              <p style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.8)', textTransform:'uppercase', letterSpacing:3, marginTop:8 }}>{profesi}</p>
+            </div>
+          </Clickable>
           {photo && <div style={{ width:130, height:130, borderRadius:'50%', overflow:'hidden', border:'4px solid rgba(255,255,255,0.5)', alignSelf:'center', flexShrink:0, zIndex:1 }}><img src={photo} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="foto" /></div>}
-          <div style={{ width:200, paddingLeft:24, display:'flex', flexDirection:'column', justifyContent:'center', gap:8, fontSize:10, color:'rgba(255,255,255,0.9)', zIndex:1, borderLeft:'1px solid rgba(255,255,255,0.2)', marginLeft:24 }}>
-            <div style={{ display:'flex', gap:8, alignItems:'center' }}><MapPin size={13}/>{alamat}</div>
-            <div style={{ display:'flex', gap:8, alignItems:'center' }}><Phone size={13}/>{hp}</div>
-            <div style={{ display:'flex', gap:8, alignItems:'center' }}><Mail size={13}/><span style={{ wordBreak:'break-all', fontSize:9 }}>{email}</span></div>
-          </div>
+          <Clickable section="personal">
+            <div style={{ width:200, paddingLeft:24, display:'flex', flexDirection:'column', justifyContent:'center', gap:8, fontSize:10, color:'rgba(255,255,255,0.9)', zIndex:1, borderLeft:'1px solid rgba(255,255,255,0.2)', marginLeft:24, height:'100%' }}>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}><MapPin size={13}/>{alamat}</div>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}><Phone size={13}/>{hp}</div>
+              <div style={{ display:'flex', gap:8, alignItems:'center' }}><Mail size={13}/><span style={{ wordBreak:'break-all', fontSize:9 }}>{email}</span></div>
+            </div>
+          </Clickable>
         </div>
         {/* Ringkasan */}
-        <div style={{ padding:'20px 36px', borderBottom:'1px solid #eee' }}>
-          <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:12 }}>
-            <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Ringkasan</span>
-            <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+        <Clickable section="summary">
+          <div style={{ padding:'20px 36px', borderBottom:'1px solid #eee' }}>
+            <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:12 }}>
+              <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Ringkasan</span>
+              <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+            </div>
+            <p style={{ fontSize:11, lineHeight:2, color:'#444', textAlign:'justify' }}>{profil}</p>
           </div>
-          <p style={{ fontSize:11, lineHeight:2, color:'#444', textAlign:'justify' }}>{profil}</p>
-        </div>
+        </Clickable>
         {/* 2-kolom utama */}
         <div style={{ display:'grid', gridTemplateColumns:'2fr 3fr', gap:0 }}>
           {/* Kiri: Keterampilan + Pendidikan */}
           <div style={{ padding:'20px 24px', borderRight:'1px solid #eee', display:'flex', flexDirection:'column', gap:24 }}>
-            <div>
-              <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:14 }}>
-                <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Keterampilan</span>
-                <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+            <Clickable section="skills">
+              <div>
+                <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:14 }}>
+                  <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Keterampilan</span>
+                  <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+                </div>
+                {skillList.map((s,i)=><div key={i} style={{ display:'flex', gap:8, marginBottom:7, fontSize:10 }}><span style={{ color:c, fontWeight:700 }}>✓</span>{s}</div>)}
               </div>
-              {skillList.map((s,i)=><div key={i} style={{ display:'flex', gap:8, marginBottom:7, fontSize:10 }}><span style={{ color:c, fontWeight:700 }}>✓</span>{s}</div>)}
-            </div>
-            <div>
-              <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:14 }}>
-                <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Pendidikan</span>
-                <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+            </Clickable>
+            <Clickable section="education">
+              <div>
+                <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:14 }}>
+                  <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Pendidikan</span>
+                  <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+                </div>
+                {edu.map((e,i)=><div key={i} style={{ display:'flex', gap:12, marginBottom:14 }}>
+                  <div style={{ fontSize:9, color:'#aaa', fontWeight:700, minWidth:60, lineHeight:1.6 }}>{e.year}</div>
+                  <div><p style={{ fontSize:10, fontWeight:800 }}>{e.desc && e.desc}</p><p style={{ fontSize:10, fontWeight:800, color:'#222' }}>{e.school}</p></div>
+                </div>)}
               </div>
-              {edu.map((e,i)=><div key={i} style={{ display:'flex', gap:12, marginBottom:14 }}>
-                <div style={{ fontSize:9, color:'#aaa', fontWeight:700, minWidth:60, lineHeight:1.6 }}>{e.year}</div>
-                <div><p style={{ fontSize:10, fontWeight:800 }}>{e.desc && e.desc}</p><p style={{ fontSize:10, fontWeight:800, color:'#222' }}>{e.school}</p></div>
-              </div>)}
-            </div>
-            {(ttl || jk) && <div>
-              <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:14 }}>
-                <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Data Pribadi</span>
-                <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
-              </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:7, fontSize:10 }}>
-                {ttl && <div style={{ display:'flex', gap:8 }}><Globe size={12} color={c}/>{ttl}</div>}
-                {jk && <div style={{ display:'flex', gap:8 }}><User size={12} color={c}/>{jk}</div>}
-              </div>
-            </div>}
+            </Clickable>
+            <Clickable section="personal">
+              {(ttl || jk) && <div>
+                <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:14 }}>
+                  <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Data Pribadi</span>
+                  <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:7, fontSize:10 }}>
+                  {ttl && <div style={{ display:'flex', gap:8 }}><Globe size={12} color={c}/>{ttl}</div>}
+                  {jk && <div style={{ display:'flex', gap:8 }}><User size={12} color={c}/>{jk}</div>}
+                </div>
+              </div>}
+            </Clickable>
           </div>
           {/* Kanan: Pengalaman Kerja */}
           <div style={{ padding:'20px 28px' }}>
-            <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:16 }}>
-              <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Pengalaman Kerja</span>
-              <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
-              {exp.map((e,i)=><div key={i} style={{ display:'flex', gap:16 }}>
-                <div style={{ fontSize:9, color:'#aaa', fontWeight:700, minWidth:72, lineHeight:1.8 }}>{e.period}</div>
-                <div style={{ flex:1 }}>
-                  <p style={{ fontWeight:900, fontSize:11 }}>{e.comp}</p>
-                  <p style={{ fontSize:10, color:c, fontWeight:700, marginBottom:6 }}>{e.pos}</p>
-                  <ul style={{ paddingLeft:14, fontSize:10, lineHeight:1.9, color:'#444' }}>{e.desc.split('\n').filter(x=>x.trim()).map((x,j)=><li key={j}>{x.replace(/^-/,'').trim()}</li>)}</ul>
-                </div>
-              </div>)}
-            </div>
+            <Clickable section="experience">
+              <div style={{ display:'flex', alignItems:'flex-end', gap:0, marginBottom:16 }}>
+                <span style={{ fontWeight:900, fontSize:12, letterSpacing:3, textTransform:'uppercase', color:'#111' }}>Pengalaman Kerja</span>
+                <div style={{ flex:1, height:2, background:c, marginLeft:10, marginBottom:3 }}/>
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+                {exp.map((e,i)=><div key={i} style={{ display:'flex', gap:16 }}>
+                  <div style={{ fontSize:9, color:'#aaa', fontWeight:700, minWidth:72, lineHeight:1.8 }}>{e.period}</div>
+                  <div style={{ flex:1 }}>
+                    <p style={{ fontWeight:900, fontSize:11 }}>{e.comp}</p>
+                    <p style={{ fontSize:10, color:c, fontWeight:700, marginBottom:6 }}>{e.pos}</p>
+                    <ul style={{ paddingLeft:14, fontSize:10, lineHeight:1.9, color:'#444' }}>{e.desc.split('\n').filter(x=>x.trim()).map((x,j)=><li key={j}>{x.replace(/^-/,'').trim()}</li>)}</ul>
+                  </div>
+                </div>)}
+              </div>
+            </Clickable>
           </div>
         </div>
       </div>
     );
+
+    /* ===================== TEMA 8: RIBBON (MOTIF) ===================== */
+    if (theme === 8) {
+      const RibbonHeader = ({ title, col }: { title: string; col: string }) => (
+        <div style={{ position: 'relative', marginLeft: -15, marginBottom: 15, display: 'inline-flex', alignItems: 'center' }}>
+          {/* Shadow Fold (Left) */}
+          <div style={{ 
+            position: 'absolute', 
+            left: 0, 
+            bottom: -8, 
+            width: 0, 
+            height: 0, 
+            borderStyle: 'solid', 
+            borderWidth: '0 8px 8px 0', 
+            borderColor: `transparent ${col}dd transparent transparent`,
+            zIndex: 0 
+          }} />
+          {/* Main Body */}
+          <div style={{ 
+            background: col, 
+            color: '#fff', 
+            padding: '8px 25px 8px 15px', 
+            fontSize: 14, 
+            fontWeight: 900, 
+            position: 'relative', 
+            zIndex: 1,
+            boxShadow: '3px 3px 6px rgba(0,0,0,0.15)',
+            textTransform: 'uppercase',
+            minWidth: 160
+          }}>
+            {title}
+            {/* Ribbon Point (Right) */}
+            <div style={{ 
+              position: 'absolute', 
+              right: -12, 
+              top: 0, 
+              width: 0, 
+              height: 0, 
+              borderStyle: 'solid', 
+              borderWidth: '18px 0 18px 12px', 
+              borderColor: `transparent transparent transparent ${col}`,
+              zIndex: 1
+            }} />
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={{ width:'100%', minHeight:'297mm', padding:35, fontFamily:'"Plus Jakarta Sans", "Inter", sans-serif', background:'#fff', color:'#333' }}>
+          {/* Top Section: Photo & Data Pribadi */}
+          <div style={{ display:'flex', gap:30, marginBottom:30 }}>
+            {/* Framed Photo */}
+            <div style={{ width:200, flexShrink:0 }}>
+              <div style={{ border:`2px solid ${c}`, padding:8, background:'#fff' }}>
+                {photo 
+                  ? <img src={photo} style={{ width:'100%', height:'auto', display:'block' }} alt="foto" />
+                  : <div style={{ width:'100%', height:240, background:'#f0f0f0', display:'flex', alignItems:'center', justifyContent:'center' }}><User size={60} color="#ccc"/></div>
+                }
+              </div>
+            </div>
+
+            {/* Data Pribadi Box */}
+            <div style={{ flex:1, border:`2px solid ${c}`, padding:20, position:'relative', paddingTop:40 }}>
+              <div style={{ position:'absolute', top:-15, right:20 }}>
+                <RibbonHeader title="Data Pribadi" col={c} />
+              </div>
+              
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+                <tbody>
+                  <tr style={{ height:30 }}><td style={{ width:120, fontWeight:700, color:'#555' }}>Nama</td><td style={{ width:15 }}>:</td><td style={{ fontWeight:900, color:c, fontSize:12 }}>{nama}</td></tr>
+                  <tr style={{ height:30 }}><td style={{ fontWeight:700, color:'#555' }}>Alamat</td><td>:</td><td>{alamat}</td></tr>
+                  <tr style={{ height:30 }}><td style={{ fontWeight:700, color:'#555' }}>Tempat, Tgl Lahir</td><td>:</td><td>{ttl}</td></tr>
+                  <tr style={{ height:30 }}><td style={{ fontWeight:700, color:'#555' }}>Jenis Kelamin</td><td>:</td><td>{jk}</td></tr>
+                  <tr style={{ height:30 }}><td style={{ fontWeight:700, color:'#555' }}>Kebangsaan</td><td>:</td><td>Indonesia</td></tr>
+                  <tr style={{ height:30 }}><td style={{ fontWeight:700, color:'#555' }}>Email</td><td>:</td><td>{email}</td></tr>
+                  <tr style={{ height:30 }}><td style={{ fontWeight:700, color:'#555' }}>Phone</td><td>:</td><td>{hp}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Pengalaman Kerja Section */}
+          <div style={{ border:`2px solid ${c}`, padding:'30px 25px 25px', position:'relative', marginBottom:35 }}>
+            <div style={{ position:'absolute', top:-18, left:-2 }}>
+              <RibbonHeader title="Pengalaman Kerja" col={c} />
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:25 }}>
+              {exp.map((e, i) => (
+                <div key={i} style={{ display:'flex', gap:20 }}>
+                  <div style={{ width:100, flexShrink:0, fontWeight:900, fontSize:11, textAlign:'center', paddingTop:4 }}>
+                    {e.period.split('-').map((p, j) => <div key={j}>{p.trim()}{j === 0 && <div style={{ margin:'2px 0' }}>-</div>}</div>)}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <h3 style={{ fontWeight:900, color:c, fontSize:14, marginBottom:4, textTransform:'uppercase' }}>{e.comp}</h3>
+                    <p style={{ fontWeight:700, fontSize:12, fontStyle:'italic', color:'#444', marginBottom:8 }}>{e.pos}</p>
+                    <div style={{ fontSize:10, lineHeight:1.7, color:'#666', textAlign:'justify' }}>{e.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pendidikan Section */}
+          <div style={{ border:`2px solid ${c}`, padding:'30px 25px 25px', position:'relative', marginBottom: 35 }}>
+            <div style={{ position:'absolute', top:-18, left:-2 }}>
+              <RibbonHeader title="Pendidikan" col={c} />
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+              {edu.map((e, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:20 }}>
+                  <div style={{ width:100, flexShrink:0, fontWeight:900, fontSize:11, textAlign:'center' }}>{e.year}</div>
+                  <div style={{ flex:1 }}>
+                    <h3 style={{ fontWeight:900, color:c, fontSize:13, textTransform:'uppercase' }}>{e.school}</h3>
+                    <p style={{ fontWeight:700, fontSize:11, fontStyle:'italic', color:'#555' }}>{e.desc}</p>
+                  </div>
+                  <div style={{ fontWeight:900, fontSize:11, color:'#333' }}>IPK: 3.50</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Keahlian Section */}
+          {skills && (
+            <div style={{ border:`2px solid ${c}`, padding:'30px 25px 25px', position:'relative' }}>
+              <div style={{ position:'absolute', top:-18, left:-2 }}>
+                <RibbonHeader title="Keahlian" col={c} />
+              </div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
+                {skillList.map((s, i) => (
+                  <span key={i} style={{ padding:'5px 15px', border:`1px solid ${c}`, color:c, fontWeight:900, fontSize:10, textTransform:'uppercase', background: `${c}08` }}>{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
 
     // fallback — tema 1
     return null;
